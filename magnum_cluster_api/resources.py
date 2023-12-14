@@ -517,6 +517,9 @@ class CloudConfigSecret(ClusterBase):
                                     "interface": CONF.capi_client.endpoint_type.replace(
                                         "URL", ""
                                     ),
+                                    "endpoint_type": CONF.capi_client.endpoint_type.replace(
+                                        "URL", ""
+                                    ),
                                     "identity_api_version": 3,
                                     "verify": not CONF.capi_client.insecure,
                                     "auth": {
