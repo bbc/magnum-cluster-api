@@ -1642,6 +1642,16 @@ class ClusterClass(Base):
                                                       permissions: "0600"
                                                       content: "{{ .cloudCaCert }}"
                                                       encoding: "base64"
+                                                    - path: "/etc/systemd/system/containerd.service.d/proxy.conf"
+                                                      owner: "root:root"
+                                                      permissions: "0644"
+                                                      content: "{{ .systemdProxyConfig }}"
+                                                      encoding: "base64"
+                                                    - path: "/etc/apt/apt.conf.d/80proxy"
+                                                      owner: "root:root"
+                                                      permissions: "0644"
+                                                      content: "{{ .aptProxyConfig }}"
+                                                      encoding: "base64"
                                                     """
                                                 ),
                                             },
@@ -1679,6 +1689,16 @@ class ClusterClass(Base):
                                                       owner: "root:root"
                                                       permissions: "0644"
                                                       content: "{{ .containerdConfig }}"
+                                                      encoding: "base64"
+                                                    - path: "/etc/systemd/system/containerd.service.d/proxy.conf"
+                                                      owner: "root:root"
+                                                      permissions: "0644"
+                                                      content: "{{ .systemdProxyConfig }}"
+                                                      encoding: "base64"
+                                                    - path: "/etc/apt/apt.conf.d/80proxy"
+                                                      owner: "root:root"
+                                                      permissions: "0644"
+                                                      content: "{{ .aptProxyConfig }}"
                                                       encoding: "base64"
                                                 """
                                                 ),
@@ -1989,6 +2009,22 @@ class Cluster(ClusterBase):
                                 "value": base64.encode_as_text(
                                     utils.generate_cloud_controller_manager_config(
                                         self.context, self.api, self.cluster
+                                    )
+                                ),
+                            },
+                            {
+                                "name": "systemdProxyConfig",
+                                "value": base64.encode_as_text(
+                                    utils.generate_systemd_proxy_config(
+                                        self.cluster
+                                    )
+                                ),
+                            },
+                            {
+                                "name": "aptProxyConfig",
+                                "value": base64.encode_as_text(
+                                    utils.generate_apt_proxy_config(
+                                        self.cluster
                                     )
                                 ),
                             },
