@@ -622,7 +622,14 @@ class KubeadmConfigTemplate(Base):
                 "spec": {
                     "template": {
                         "spec": {
-                            "files": [],
+                            "files": [
+                                {
+                                    "path": "/etc/kubernetes/.placeholder",
+                                    "permissions": "0644",
+                                    "content": base64.encode_as_text(PLACEHOLDER),
+                                    "encoding": "base64",
+                                },
+                            ],
                             "joinConfiguration": {
                                 "nodeRegistration": {
                                     "name": "{{ local_hostname }}",
@@ -915,6 +922,24 @@ class ClusterClass(Base):
                             },
                         },
                         {
+                            "name": "systemdProxyConfig",
+                            "required": True,
+                            "schema": {
+                                "openAPIV3Schema": {
+                                    "type": "string",
+                                },
+                            },
+                        },
+                        {
+                            "name": "aptProxyConfig",
+                            "required": True,
+                            "schema": {
+                                "openAPIV3Schema": {
+                                    "type": "string",
+                                },
+                            },
+                        },
+                        {
                             "name": "containerdConfig",
                             "required": True,
                             "schema": {
@@ -1199,6 +1224,66 @@ class ClusterClass(Base):
                                         },
                                     ],
                                 }
+                            ],
+                        },
+                        {
+                            "name": "ubuntu",
+                            "enabledIf": '{{ if eq .operatingSystem "ubuntu" }}true{{end}}',
+                            "definitions": [
+                                {
+                                    "selector": {
+                                        "apiVersion": objects.KubeadmControlPlaneTemplate.version,
+                                        "kind": objects.KubeadmControlPlaneTemplate.kind,
+                                        "matchResources": {
+                                            "controlPlane": True,
+                                        },
+                                    },
+                                    "jsonPatches": [
+                                        {
+                                            "op": "add",
+                                            "path": "/spec/template/spec/kubeadmConfigSpec/files/-",
+                                            "valueFrom": {
+                                                "template": textwrap.dedent(
+                                                    """\
+                                                    path: "/etc/apt/apt.conf.d/90proxy"
+                                                    owner: "root:root"
+                                                    permissions: "0644"
+                                                    content: "{{ .aptProxyConfig }}"
+                                                    encoding: "base64"
+                                                    """
+                                                ),
+                                            },
+                                        },
+                                    ],
+                                },
+                                {
+                                    "selector": {
+                                        "apiVersion": objects.KubeadmConfigTemplate.version,
+                                        "kind": objects.KubeadmConfigTemplate.kind,
+                                        "matchResources": {
+                                            "machineDeploymentClass": {
+                                                "names": ["default-worker"],
+                                            }
+                                        },
+                                    },
+                                    "jsonPatches": [
+                                        {
+                                            "op": "add",
+                                            "path": "/spec/template/spec/files/-",
+                                            "valueFrom": {
+                                                "template": textwrap.dedent(
+                                                    """\
+                                                    path: "/etc/apt/apt.conf.d/90proxy"
+                                                    owner: "root:root"
+                                                    permissions: "0644"
+                                                    content: "{{ .aptProxyConfig }}"
+                                                    encoding: "base64"
+                                                    """
+                                                ),
+                                            },
+                                        },
+                                    ],
+                                },
                             ],
                         },
                         {
@@ -1656,6 +1741,29 @@ class ClusterClass(Base):
                                                 )
                                             },
                                         },
+                                        {
+                                            "op": "add",
+                                            "path": "/spec/template/spec/kubeadmConfigSpec/files/-",
+                                            "valueFrom": {
+                                                "template": textwrap.dedent(
+                                                    """\
+                                                    path: "/etc/systemd/system/containerd.service.d/proxy.conf"
+                                                    owner: "root:root"
+                                                    permissions: "0644"
+                                                    content: "{{ .systemdProxyConfig }}"
+                                                    encoding: "base64"
+                                                    """
+                                                )
+                                            },
+                                        },
+                                        {
+                                            "op": "add",
+                                            "path": "/spec/template/spec/kubeadmConfigSpec/preKubeadmCommands",
+                                            "value": [
+                                                "systemctl daemon-reload",
+                                                "systemctl restart containerd"
+                                            ],
+                                        },
                                     ],
                                 },
                                 {
@@ -1671,28 +1779,71 @@ class ClusterClass(Base):
                                     "jsonPatches": [
                                         {
                                             "op": "add",
-                                            "path": "/spec/template/spec/files",
+                                            "path": "/spec/template/spec/files/-",
                                             "valueFrom": {
                                                 "template": textwrap.dedent(
                                                     """\
-                                                    - path: "/etc/kubernetes/cloud.conf"
-                                                      owner: "root:root"
-                                                      permissions: "0600"
-                                                      content: "{{ .cloudControllerManagerConfig }}"
-                                                      encoding: "base64"
-                                                    - path: "/etc/kubernetes/cloud_ca.crt"
-                                                      owner: "root:root"
-                                                      permissions: "0600"
-                                                      content: "{{ .cloudCaCert }}"
-                                                      encoding: "base64"
-                                                    - path: "/etc/containerd/config.toml"
-                                                      owner: "root:root"
-                                                      permissions: "0644"
-                                                      content: "{{ .containerdConfig }}"
-                                                      encoding: "base64"
-                                                """
+                                                    path: "/etc/kubernetes/cloud.conf"
+                                                    owner: "root:root"
+                                                    permissions: "0600"
+                                                    content: "{{ .cloudControllerManagerConfig }}"
+                                                    encoding: "base64"
+                                                    """
                                                 ),
                                             },
+                                        },
+                                        {
+                                            "op": "add",
+                                            "path": "/spec/template/spec/files/-",
+                                            "valueFrom": {
+                                                "template": textwrap.dedent(
+                                                    """\
+                                                    path: "/etc/kubernetes/cloud_ca.crt"
+                                                    owner: "root:root"
+                                                    permissions: "0600"
+                                                    content: "{{ .cloudCaCert }}"
+                                                    encoding: "base64"
+                                                    """
+                                                ),
+                                            },
+                                        },
+                                        {
+                                            "op": "add",
+                                            "path": "/spec/template/spec/files/-",
+                                            "valueFrom": {
+                                                "template": textwrap.dedent(
+                                                    """\
+                                                    path: "/etc/containerd/config.toml"
+                                                    owner: "root:root"
+                                                    permissions: "0644"
+                                                    content: "{{ .containerdConfig }}"
+                                                    encoding: "base64"
+                                                    """
+                                                ),
+                                            },
+                                        },
+                                        {
+                                            "op": "add",
+                                            "path": "/spec/template/spec/files/-",
+                                            "valueFrom": {
+                                                "template": textwrap.dedent(
+                                                    """\
+                                                    path: "/etc/systemd/system/containerd.service.d/proxy.conf"
+                                                    owner: "root:root"
+                                                    permissions: "0644"
+                                                    content: "{{ .systemdProxyConfig }}"
+                                                    encoding: "base64"
+                                                    """
+                                                ),
+                                            },
+                                        },
+                                        {
+                                            "op": "add",
+                                            "path": "/spec/template/spec/preKubeadmCommands",
+                                            "value": [
+                                                "systemctl daemon-reload",
+                                                "systemctl restart containerd"
+                                            ],
                                         },
                                     ],
                                 },
@@ -2000,6 +2151,18 @@ class Cluster(ClusterBase):
                                     utils.generate_cloud_controller_manager_config(
                                         self.context, self.api, self.cluster
                                     )
+                                ),
+                            },
+                            {
+                                "name": "systemdProxyConfig",
+                                "value": base64.encode_as_text(
+                                    utils.generate_systemd_proxy_config(self.cluster)
+                                ),
+                            },
+                            {
+                                "name": "aptProxyConfig",
+                                "value": base64.encode_as_text(
+                                    utils.generate_apt_proxy_config(self.cluster)
                                 ),
                             },
                             {
