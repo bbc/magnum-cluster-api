@@ -915,6 +915,24 @@ class ClusterClass(Base):
                             },
                         },
                         {
+                            "name": "systemdProxyConfig",
+                            "required": True,
+                            "schema": {
+                                "openAPIV3Schema": {
+                                    "type": "string",
+                                },
+                            },
+                        },
+                        {
+                            "name": "aptProxyConfig",
+                            "required": True,
+                            "schema": {
+                                "openAPIV3Schema": {
+                                    "type": "string",
+                                },
+                            },
+                        },
+                        {
                             "name": "containerdConfig",
                             "required": True,
                             "schema": {
