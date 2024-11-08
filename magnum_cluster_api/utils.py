@@ -370,6 +370,10 @@ def validate_cluster(ctx: context.RequestContext, cluster: magnum_objects.Cluste
     if (cluster.master_count % 2) == 0:
         raise mcapi_exceptions.ClusterMasterCountEven
 
+    # Validate security preferences
+    if not get_cluster_floating_ip_disabled(cluster) or cluster.floating_ip_enabled:
+        raise mcapi_exceptions.InsecureConfiguration
+
     # Validate flavors
     osc = clients.get_openstack_api(ctx)
     validate_flavor_name(osc, cluster.master_flavor_id)

@@ -61,6 +61,10 @@ class UnsupportedCNI(Exception):
     pass
 
 
+class InsecureConfiguration(Exception):
+    pass
+
+
 class OpenstackFlavorInvalidName(exception.InvalidName):
     message = _("Expected a flavor name but received flavor id %(flavor)s.")
 
