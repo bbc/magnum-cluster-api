@@ -65,6 +65,10 @@ class MachineInvalidName(exception.InvalidName):
     message = _("Expected a lowercase RFC 1123 subdomain name, got %(name)s.")
 
 
+class InsecureConfiguration(Exception):
+    pass
+
+
 class MachineDeploymentNotFound(exception.ObjectNotFound):
     message = _("MachineDeployment %(name)s not found.")
 
