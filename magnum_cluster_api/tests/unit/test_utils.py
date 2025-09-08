@@ -107,6 +107,9 @@ class TestGenerateCloudControllerManagerConfig:
             [LoadBalancer]
             lb-provider=amphora
             lb-method=ROUND_ROBIN
+
+            [Networking]
+            address-sort-order=10.0.0.0/24
             """
         )
 
@@ -132,6 +135,9 @@ class TestGenerateCloudControllerManagerConfig:
             [LoadBalancer]
             lb-provider=amphora
             lb-method=ROUND_ROBIN
+
+            [Networking]
+            address-sort-order=10.0.0.0/24
             """
         )
 
@@ -157,6 +163,9 @@ class TestGenerateCloudControllerManagerConfig:
             [LoadBalancer]
             lb-provider=ovn
             lb-method=SOURCE_IP_PORT
+
+            [Networking]
+            address-sort-order=10.0.0.0/24
             """
         )
 
@@ -187,6 +196,9 @@ class TestGenerateCloudControllerManagerConfig:
             [LoadBalancer]
             lb-provider=ovn
             lb-method=SOURCE_IP_PORT
+
+            [Networking]
+            address-sort-order=10.0.0.0/24
             """
         )
 

@@ -34,6 +34,7 @@ from tenacity import retry, retry_if_exception_type
 from magnum_cluster_api import clients
 from magnum_cluster_api import exceptions as mcapi_exceptions
 from magnum_cluster_api import image_utils, images, objects
+from magnum_cluster_api.resources import DEFAULT_NODE_CIDR
 
 AVAILABLE_OPERATING_SYSTEMS = ["ubuntu", "flatcar", "rockylinux"]
 CONF = cfg.CONF
@@ -125,6 +126,8 @@ def generate_cloud_controller_manager_config(
             octavia_lb_algorithm=octavia_lb_algorithm
         )
 
+    node_cidr = cluster.labels.get("fixed_subnet_cidr", DEFAULT_NODE_CIDR)
+
     return textwrap.dedent(
         f"""\
         [Global]
@@ -137,6 +140,8 @@ def generate_cloud_controller_manager_config(
         [LoadBalancer]
         lb-provider={octavia_provider}
         lb-method={octavia_lb_algorithm}
+        [Networking]
+        address-sort-order={node_cidr}
         """
     )
 
