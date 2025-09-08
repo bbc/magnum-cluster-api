@@ -112,6 +112,9 @@ class TestGenerateCloudControllerManagerConfig:
             lb-provider=amphora
             lb-method=ROUND_ROBIN
             create-monitor=True
+
+            [Networking]
+            address-sort-order=10.0.0.0/24
             """
         )
 
@@ -138,6 +141,9 @@ class TestGenerateCloudControllerManagerConfig:
             lb-provider=amphora
             lb-method=ROUND_ROBIN
             create-monitor=True
+
+            [Networking]
+            address-sort-order=10.0.0.0/24
             """
         )
 
@@ -169,6 +175,9 @@ class TestGenerateCloudControllerManagerConfig:
             lb-provider=ovn
             lb-method=SOURCE_IP_PORT
             create-monitor=False
+
+            [Networking]
+            address-sort-order=10.0.0.0/24
             """
         )
 
@@ -195,6 +204,9 @@ class TestGenerateCloudControllerManagerConfig:
             lb-provider=ovn
             lb-method=SOURCE_IP_PORT
             create-monitor=True
+
+            [Networking]
+            address-sort-order=10.0.0.0/24
             """
         )
 
@@ -226,6 +238,9 @@ class TestGenerateCloudControllerManagerConfig:
             lb-provider=ovn
             lb-method=SOURCE_IP_PORT
             create-monitor=True
+
+            [Networking]
+            address-sort-order=10.0.0.0/24
             """
         )
 
