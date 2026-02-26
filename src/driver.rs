@@ -65,38 +65,9 @@ impl Driver {
 
         Python::detach(py, || {
             get_runtime().block_on(async {
-                // NOTE(mnaser): The updated cloud provider resource uses a different set of
-                //               labels and annotations (from the Helm chart) than the legacy
-                //               ones which was created by manifests. We need to clean up the
-                //               legacy resources otherwise it will generate a conflict during
-                //               the upgrade.
-                //
-                //               https://github.com/vexxhost/magnum-cluster-api/issues/580
                 if upgrade {
-                    debug!("Detecting cluster upgrade, ensuring that the legacy resource set is deleted");
-
-                    let client = cluster.client().await?;
-
-                    let api: Api<Deployment> = Api::namespaced(client.clone(), "kube-system");
-                    client.delete_resource(api, "csi-cinder-controllerplugin").await?;
-
-                    let api: Api<DaemonSet> = Api::namespaced(client.clone(), "kube-system");
-                    client.delete_resource(api.clone(), "csi-cinder-nodeplugin").await?;
-                    client.delete_resource(api.clone(), "openstack-manila-csi-nodeplugin").await?;
-                    client.delete_resources(
-                        api.clone(),
-                        &ListParams::default().labels_from(
-                            &Expression::Equal(
-                                "k8s-app".into(),
-                                "openstack-cloud-controller-manager".into()
-                            ).into(),
-                        ),
-                    ).await?;
-
-                    let api: Api<StatefulSet> = Api::namespaced(client.clone(), "kube-system");
-                    client.delete_resource(api, "openstack-manila-csi-controllerplugin").await?;
+                    debug!("Detecting cluster upgrade");
                 }
-
                 // TODO(mnaser): The secret is still being created by the Python
                 //               code, we need to move this to Rust.
                 self.client
